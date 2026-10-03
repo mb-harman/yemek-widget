@@ -10,12 +10,13 @@ import pathlib
 import re
 import sys
 import time
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
 from playwright.sync_api import sync_playwright
 
 URL = "https://sks.iuc.edu.tr/tr/yemeklistesi"
 OUT = pathlib.Path("menu.json")
+WIDGET_OUT = pathlib.Path("widget.json")  # KWGT için sade, düz yapı
 ATTEMPTS = 3
 WAIT_BETWEEN = 15  # saniye
 
@@ -60,6 +61,47 @@ DEBUG_JS = r"""
   return { total, visible, body: (document.body.innerText || '').slice(0, 1500) };
 }
 """
+
+
+def build_widget(menu):
+    """menu.json verisinden KWGT'nin kolay okuyacağı düz bir yapı üretir.
+
+    Anahtar: d20261006 (harfle başlar, tiresiz).
+    Her gün için l1..l5 (satırlar), kcal ve title bulunur.
+    Aradaki günler (hafta sonu vb.) için hazır mesaj yazılır.
+    """
+    if not menu:
+        return {}
+    dates = sorted(datetime.strptime(k, "%Y-%m-%d").date() for k in menu)
+    start = dates[0]
+    last = dates[-1]
+    # son verinin ayının sonuna kadar doldur
+    nxt = (last.replace(day=28) + timedelta(days=4)).replace(day=1)
+    end = nxt - timedelta(days=1)
+
+    out = {}
+    d = start
+    while d <= end:
+        iso = d.strftime("%Y-%m-%d")
+        key = "d" + d.strftime("%Y%m%d")
+        if iso in menu:
+            lines = list(menu[iso]["dishes"])
+            kcal = menu[iso].get("kcal")
+            kcal_txt = f"{kcal} kcal" if kcal else ""
+        elif d.weekday() >= 5:
+            lines, kcal_txt = ["Hafta sonu yemek yok :("], ""
+        else:
+            lines, kcal_txt = ["Bugün menü bulunamadı"], ""
+        lines = (lines + [""] * 5)[:5]
+        out[key] = {
+            "title": "GÜNÜN MENÜSÜ",
+            "l1": lines[0], "l2": lines[1], "l3": lines[2],
+            "l4": lines[3], "l5": lines[4],
+            "kcal": kcal_txt,
+            "all": "\n".join(x for x in lines if x),
+        }
+        d += timedelta(days=1)
+    return out
 
 
 def parse(raw):
@@ -139,7 +181,13 @@ def main():
         json.dumps(existing, ensure_ascii=False, indent=1, sort_keys=True),
         encoding="utf-8",
     )
+    widget = build_widget(existing)
+    WIDGET_OUT.write_text(
+        json.dumps(widget, ensure_ascii=False, indent=1, sort_keys=True),
+        encoding="utf-8",
+    )
     print(f"{len(days)} gün işlendi, toplam {len(existing)} gün kayıtlı.")
+    print(f"widget.json: {len(widget)} gün (hafta sonları dahil).")
 
 
 if __name__ == "__main__":
