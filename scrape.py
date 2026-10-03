@@ -1,6 +1,7 @@
 """İÜC SKS yemek listesini çekip menu.json'a yazar.
 
 - Sadece "Öğle Yemeği" sekmesini alır (akşam ile aynı).
+- Sayfa açılmazsa 3 kereye kadar tekrar dener.
 - Hiç gün bulamazsa hata verir ve mevcut menu.json'u ezmez.
 - Eski günleri korur, yeni günleri ekler/günceller.
 """
@@ -8,12 +9,15 @@ import json
 import pathlib
 import re
 import sys
+import time
 from datetime import datetime
 
 from playwright.sync_api import sync_playwright
 
 URL = "https://sks.iuc.edu.tr/tr/yemeklistesi"
 OUT = pathlib.Path("menu.json")
+ATTEMPTS = 3
+WAIT_BETWEEN = 15  # saniye
 
 # Sayfadaki her tarih kartını bulur (sadece GÖRÜNÜR olanlar):
 # içinde SADECE bir tarih geçen en büyük kapsayıcıyı kart sayar.
@@ -76,35 +80,55 @@ def parse(raw):
     return days
 
 
-def main():
+def fetch_once():
+    """Sayfayı bir kez açıp ham kart verisini döndürür."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        page = browser.new_page(viewport={"width": 1366, "height": 900})
-        page.goto(URL, wait_until="networkidle", timeout=60000)
-
-        # Angular ile sonradan yüklenir: DOM'a gelmesini bekle (görünür olmasını değil)
-        page.wait_for_selector(
-            "text=/\\d{2}\\.\\d{2}\\.\\d{4}/", state="attached", timeout=30000
-        )
-
-        # Öğle sekmesine tıkla (zaten açıksa sorun değil)
         try:
-            page.get_by_text("Öğle Yemeği").locator("visible=true").first.click(
-                timeout=5000
+            page = browser.new_page(viewport={"width": 1366, "height": 900})
+            # networkidle yerine domcontentloaded: arka plan istekleri takılma yapmasın
+            page.goto(URL, wait_until="domcontentloaded", timeout=60000)
+
+            # Angular ile sonradan yüklenir: DOM'a gelmesini bekle (görünür olmasını değil)
+            page.wait_for_selector(
+                "text=/\\d{2}\\.\\d{2}\\.\\d{4}/", state="attached", timeout=45000
             )
+
+            # Öğle sekmesine tıkla (zaten açıksa sorun değil)
+            try:
+                page.get_by_text("Öğle Yemeği").locator("visible=true").first.click(
+                    timeout=5000
+                )
+            except Exception as e:
+                print(f"Sekme tıklanamadı (devam ediliyor): {type(e).__name__}")
+            page.wait_for_timeout(2000)
+
+            raw = page.evaluate(EXTRACT_JS)
+            if not raw:
+                info = page.evaluate(DEBUG_JS)
+                print(
+                    f"DEBUG: toplam tarih öğesi={info['total']}, görünür={info['visible']}"
+                )
+                print("DEBUG sayfa metni (ilk 1500 karakter):")
+                print(info["body"])
+            return raw
+        finally:
+            browser.close()
+
+
+def main():
+    days = {}
+    for attempt in range(1, ATTEMPTS + 1):
+        try:
+            days = parse(fetch_once())
+            if days:
+                break
+            print(f"Deneme {attempt}/{ATTEMPTS}: veri bulunamadı.")
         except Exception as e:
-            print(f"Sekme tıklanamadı (devam ediliyor): {type(e).__name__}")
-        page.wait_for_timeout(2000)
+            print(f"Deneme {attempt}/{ATTEMPTS} başarısız: {type(e).__name__}: {str(e)[:200]}")
+        if attempt < ATTEMPTS:
+            time.sleep(WAIT_BETWEEN)
 
-        raw = page.evaluate(EXTRACT_JS)
-        if not raw:
-            info = page.evaluate(DEBUG_JS)
-            print(f"DEBUG: toplam tarih öğesi={info['total']}, görünür={info['visible']}")
-            print("DEBUG sayfa metni (ilk 1500 karakter):")
-            print(info["body"])
-        browser.close()
-
-    days = parse(raw)
     if not days:
         print("HATA: hiç gün bulunamadı, menu.json değiştirilmedi.", file=sys.stderr)
         sys.exit(1)
