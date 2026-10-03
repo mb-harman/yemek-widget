@@ -17,6 +17,7 @@ from playwright.sync_api import sync_playwright
 URL = "https://sks.iuc.edu.tr/tr/yemeklistesi"
 OUT = pathlib.Path("menu.json")
 WIDGET_OUT = pathlib.Path("widget.json")  # KWGT için sade, düz yapı
+BLANK = "\u00a0"  # KWGT boş ("") değeri null sayıp hata veriyor; görünmez boşluk kullan
 ATTEMPTS = 3
 WAIT_BETWEEN = 15  # saniye
 
@@ -87,21 +88,36 @@ def build_widget(menu):
         if iso in menu:
             lines = list(menu[iso]["dishes"])
             kcal = menu[iso].get("kcal")
-            kcal_txt = f"{kcal} kcal" if kcal else ""
+            kcal_txt = f"{kcal} kcal" if kcal else BLANK
         elif d.weekday() >= 5:
-            lines, kcal_txt = ["Hafta sonu yemek yok :("], ""
+            lines, kcal_txt = ["Hafta sonu yemek yok :("], BLANK
         else:
-            lines, kcal_txt = ["Bugün menü bulunamadı"], ""
-        lines = (lines + [""] * 5)[:5]
+            lines, kcal_txt = ["Bugün menü bulunamadı"], BLANK
+        lines = (lines + [BLANK] * 5)[:5]
         out[key] = {
             "title": "GÜNÜN MENÜSÜ",
             "l1": lines[0], "l2": lines[1], "l3": lines[2],
             "l4": lines[3], "l5": lines[4],
             "kcal": kcal_txt,
-            "all": "\n".join(x for x in lines if x),
+            "all": "\n".join(x for x in lines if x.strip()),
         }
         d += timedelta(days=1)
     return out
+
+
+def write_day_files(widget):
+    """Her gün için KWGT'nin düz metin (txt) olarak okuyacağı dosyalar yazar.
+
+    days/20261006.txt       -> o günün yemekleri (alt alta)
+    days/20261006.kcal.txt  -> kalori (yoksa görünmez boşluk)
+    """
+    folder = pathlib.Path("days")
+    folder.mkdir(exist_ok=True)
+    for key, v in widget.items():
+        day = key[1:]  # "d20261006" -> "20261006"
+        lines = [v[f"l{i}"] for i in range(1, 6) if v[f"l{i}"].strip()]
+        (folder / f"{day}.txt").write_text("\n".join(lines), encoding="utf-8")
+        (folder / f"{day}.kcal.txt").write_text(v["kcal"] or BLANK, encoding="utf-8")
 
 
 def parse(raw):
@@ -186,6 +202,7 @@ def main():
         json.dumps(widget, ensure_ascii=False, indent=1, sort_keys=True),
         encoding="utf-8",
     )
+    write_day_files(widget)
     print(f"{len(days)} gün işlendi, toplam {len(existing)} gün kayıtlı.")
     print(f"widget.json: {len(widget)} gün (hafta sonları dahil).")
 
