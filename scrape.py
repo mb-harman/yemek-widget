@@ -64,7 +64,7 @@ def parse(raw):
         iso = datetime.strptime(item["date"], "%d.%m.%Y").strftime("%Y-%m-%d")
         dishes, kcal = [], None
         for line in item["lines"]:
-            if line == item["date"]:
+            if line == item["date"] or re.fullmatch(r"\s*kalori\s*", line, re.I):
                 continue
             m = re.search(r"(\d+)\s*kalori", line, re.I)
             if m:
