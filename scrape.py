@@ -15,7 +15,8 @@ from playwright.sync_api import sync_playwright
 URL = "https://sks.iuc.edu.tr/tr/yemeklistesi"
 OUT = pathlib.Path("menu.json")
 
-# Sayfadaki her tarih kartını bulur: içinde SADECE bir tarih geçen en büyük kapsayıcıyı kart sayar.
+# Sayfadaki her tarih kartını bulur (sadece GÖRÜNÜR olanlar):
+# içinde SADECE bir tarih geçen en büyük kapsayıcıyı kart sayar.
 EXTRACT_JS = r"""
 () => {
   const dateRe = /^\d{2}\.\d{2}\.\d{4}$/;
@@ -24,6 +25,7 @@ EXTRACT_JS = r"""
   const seen = new Set();
   for (const el of document.querySelectorAll('*')) {
     if (el.children.length) continue;
+    if (el.offsetParent === null) continue;   // gizli öğeleri atla
     const t = el.textContent.trim();
     if (!dateRe.test(t) || seen.has(t)) continue;
     let card = el;
@@ -38,6 +40,20 @@ EXTRACT_JS = r"""
     results.push({ date: t, lines });
   }
   return results;
+}
+"""
+
+DEBUG_JS = r"""
+() => {
+  const re = /^\d{2}\.\d{2}\.\d{4}$/;
+  let total = 0, visible = 0;
+  for (const el of document.querySelectorAll('*')) {
+    if (el.children.length) continue;
+    if (!re.test(el.textContent.trim())) continue;
+    total++;
+    if (el.offsetParent !== null) visible++;
+  }
+  return { total, visible, body: (document.body.innerText || '').slice(0, 1500) };
 }
 """
 
@@ -63,15 +79,29 @@ def parse(raw):
 def main():
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        page = browser.new_page()
+        page = browser.new_page(viewport={"width": 1366, "height": 900})
         page.goto(URL, wait_until="networkidle", timeout=60000)
-        page.wait_for_selector("text=/\\d{2}\\.\\d{2}\\.\\d{4}/", timeout=30000)
+
+        # Angular ile sonradan yüklenir: DOM'a gelmesini bekle (görünür olmasını değil)
+        page.wait_for_selector(
+            "text=/\\d{2}\\.\\d{2}\\.\\d{4}/", state="attached", timeout=30000
+        )
+
+        # Öğle sekmesine tıkla (zaten açıksa sorun değil)
         try:
-            page.get_by_text("Öğle Yemeği").first.click(timeout=5000)
-            page.wait_for_timeout(1500)
-        except Exception:
-            pass  # zaten açık olabilir
+            page.get_by_text("Öğle Yemeği").locator("visible=true").first.click(
+                timeout=5000
+            )
+        except Exception as e:
+            print(f"Sekme tıklanamadı (devam ediliyor): {type(e).__name__}")
+        page.wait_for_timeout(2000)
+
         raw = page.evaluate(EXTRACT_JS)
+        if not raw:
+            info = page.evaluate(DEBUG_JS)
+            print(f"DEBUG: toplam tarih öğesi={info['total']}, görünür={info['visible']}")
+            print("DEBUG sayfa metni (ilk 1500 karakter):")
+            print(info["body"])
         browser.close()
 
     days = parse(raw)
