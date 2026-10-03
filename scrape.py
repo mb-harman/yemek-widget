@@ -108,15 +108,16 @@ def build_widget(menu):
 def write_day_files(widget):
     """Her gün için KWGT'nin düz metin (txt) olarak okuyacağı dosyalar yazar.
 
-    days/20261006.txt       -> o günün yemekleri (alt alta)
-    days/20261006.kcal.txt  -> kalori (yoksa görünmez boşluk)
+    KWGT satır sonlarını boşluğa çevirdiği için her satır AYRI dosyadır:
+    days/20261006.1.txt ... days/20261006.5.txt  -> yemek satırları (boşsa görünmez boşluk)
+    days/20261006.kcal.txt                        -> kalori (yoksa görünmez boşluk)
     """
     folder = pathlib.Path("days")
     folder.mkdir(exist_ok=True)
     for key, v in widget.items():
         day = key[1:]  # "d20261006" -> "20261006"
-        lines = [v[f"l{i}"] for i in range(1, 6) if v[f"l{i}"].strip()]
-        (folder / f"{day}.txt").write_text("\n".join(lines), encoding="utf-8")
+        for i in range(1, 6):
+            (folder / f"{day}.{i}.txt").write_text(v[f"l{i}"] or BLANK, encoding="utf-8")
         (folder / f"{day}.kcal.txt").write_text(v["kcal"] or BLANK, encoding="utf-8")
 
 
