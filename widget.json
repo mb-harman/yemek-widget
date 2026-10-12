@@ -120,23 +120,23 @@
   "title": "GÜNÜN MENÜSÜ"
  },
  "d20261013": {
-  "all": "Sebze Çorbası\nPiliç Topkapı\nZeytinyağlı Mantar Sote\nFıstıklı Baklava",
+  "all": "Sebze Çorbası\nÇoban Kavurma+Pilav Garni\n(Piliç Topkapı - Bahçeköy ve Sultangazi Yerleşkeleri)\nZeytinyağlı Mantar Sote\nFıstıklı Baklava",
   "kcal": "1280 kcal",
   "l1": "Sebze Çorbası",
-  "l2": "Piliç Topkapı",
-  "l3": "Zeytinyağlı Mantar Sote",
-  "l4": "Fıstıklı Baklava",
-  "l5": " ",
+  "l2": "Çoban Kavurma+Pilav Garni",
+  "l3": "(Piliç Topkapı - Bahçeköy ve Sultangazi Yerleşkeleri)",
+  "l4": "Zeytinyağlı Mantar Sote",
+  "l5": "Fıstıklı Baklava",
   "title": "GÜNÜN MENÜSÜ"
  },
  "d20261014": {
-  "all": "Mercimek Çorbası\nKağıt Kebabı\nPeynirli Makarna\nYoğurt",
+  "all": "Mercimek Çorbası\nTavuk Külbastı\n(Kağıt Kebabı - Bahçeköy ve Sultangazi Yerleşkeleri)\nPeynirli Makarna\nYoğurt",
   "kcal": "1115 kcal",
   "l1": "Mercimek Çorbası",
-  "l2": "Kağıt Kebabı",
-  "l3": "Peynirli Makarna",
-  "l4": "Yoğurt",
-  "l5": " ",
+  "l2": "Tavuk Külbastı",
+  "l3": "(Kağıt Kebabı - Bahçeköy ve Sultangazi Yerleşkeleri)",
+  "l4": "Peynirli Makarna",
+  "l5": "Yoğurt",
   "title": "GÜNÜN MENÜSÜ"
  },
  "d20261015": {
@@ -150,10 +150,10 @@
   "title": "GÜNÜN MENÜSÜ"
  },
  "d20261016": {
-  "all": "Mantar Çorbası\nSoslu Misket Köfte (Püre Garnili)\nCevizli Erişte\nYoğurtlu Kapya",
+  "all": "Mantar Çorbası\nSoslu Misket Köfte (Patates Garnili)\nCevizli Erişte\nYoğurtlu Kapya",
   "kcal": "1150 kcal",
   "l1": "Mantar Çorbası",
-  "l2": "Soslu Misket Köfte (Püre Garnili)",
+  "l2": "Soslu Misket Köfte (Patates Garnili)",
   "l3": "Cevizli Erişte",
   "l4": "Yoğurtlu Kapya",
   "l5": " ",
@@ -260,10 +260,10 @@
   "title": "GÜNÜN MENÜSÜ"
  },
  "d20261027": {
-  "all": "Elvan Kız Çorba\nBeğendili Kebap(Patlıcan)\nPirinç Pilavı\nKeşkül",
+  "all": "Elvan Kız Çorba\nÇoban Kavurma\nPirinç Pilavı\nKeşkül",
   "kcal": "1160 kcal",
   "l1": "Elvan Kız Çorba",
-  "l2": "Beğendili Kebap(Patlıcan)",
+  "l2": "Çoban Kavurma",
   "l3": "Pirinç Pilavı",
   "l4": "Keşkül",
   "l5": " ",
