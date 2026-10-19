@@ -130,13 +130,13 @@
   "title": "GÜNÜN MENÜSÜ"
  },
  "d20261014": {
-  "all": "Mercimek Çorbası\nTavuk Külbastı\n(Kağıt Kebabı - Bahçeköy ve Sultangazi Yerleşkeleri)\nPeynirli Makarna\nYoğurt",
+  "all": "Mercimek Çorbası\nTavuk Külbastı\n(Kağıt Kebabı - Bahçeköy ve Sultangazi Yerleşkeleri)\nCevizli Erişte\n(Peynirli Makarna - Bahçeköy ve Sultangazi Yerleşkeleri)",
   "kcal": "1115 kcal",
   "l1": "Mercimek Çorbası",
   "l2": "Tavuk Külbastı",
   "l3": "(Kağıt Kebabı - Bahçeköy ve Sultangazi Yerleşkeleri)",
-  "l4": "Peynirli Makarna",
-  "l5": "Yoğurt",
+  "l4": "Cevizli Erişte",
+  "l5": "(Peynirli Makarna - Bahçeköy ve Sultangazi Yerleşkeleri)",
   "title": "GÜNÜN MENÜSÜ"
  },
  "d20261015": {
@@ -150,13 +150,13 @@
   "title": "GÜNÜN MENÜSÜ"
  },
  "d20261016": {
-  "all": "Mantar Çorbası\nSoslu Misket Köfte (Patates Garnili)\nCevizli Erişte\nYoğurtlu Kapya",
+  "all": "Mantar Çorbası\nSoslu Misket Köfte (Patates Garnili)\nPeynirli Makarna\n(Cevizli Erişte - Bahçeköy ve Sultangazi Yerleşkeleri)\nYoğurtlu Kapya",
   "kcal": "1150 kcal",
   "l1": "Mantar Çorbası",
   "l2": "Soslu Misket Köfte (Patates Garnili)",
-  "l3": "Cevizli Erişte",
-  "l4": "Yoğurtlu Kapya",
-  "l5": " ",
+  "l3": "Peynirli Makarna",
+  "l4": "(Cevizli Erişte - Bahçeköy ve Sultangazi Yerleşkeleri)",
+  "l5": "Yoğurtlu Kapya",
   "title": "GÜNÜN MENÜSÜ"
  },
  "d20261017": {
